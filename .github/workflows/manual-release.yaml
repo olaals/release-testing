@@ -1,9 +1,7 @@
 name: Create Pull Request from Development to Staging
 
 on:
-  release:
-    types:
-      - published
+  workflow_dispatch: # Allows manual trigger
 
 permissions:
   contents: write        # Allows pushing commits, creating branches, etc.
@@ -30,7 +28,7 @@ jobs:
           gh pr create \
             --base staging \
             --head development \
-            --title "Release ${{ github.event.release.tag_name }}: Merge development into staging" \
-            --body "This pull request merges `development` into `staging` for release `${{ github.event.release.tag_name }}`."
+            --title 'Merge development into staging' \
+            --body 'This pull request was created by a GitHub Action.'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
