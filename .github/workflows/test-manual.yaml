@@ -1,0 +1,29 @@
+name: Manual Trigger with Parameters
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        default: "staging"
+        type: string
+      version:
+        description: "Version to deploy"
+        required: false
+        type: string
+      enable_feature_x:
+        description: "Enable Feature X"
+        required: false
+        default: "false"
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print inputs
+        run: |
+          echo "Environment: ${{ inputs.environment }}"
+          echo "Version: ${{ inputs.version }}"
+          echo "Feature X Enabled: ${{ inputs.enable_feature_x }}"
