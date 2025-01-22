@@ -32,10 +32,16 @@ jobs:
         run: |
           branch_name="release-${{ github.event.release.tag_name }}"
           target_commit="${{ github.event.release.target_commitish }}"
-          if ! git rev-parse "$target_commit" >/dev/null 2>&1; then
-            echo "Target commit $target_commit does not exist. Exiting."
-            exit 1
+          branch="${{ github.event.release.target_commitish }}"
+          
+          # Check if target_commitish exists as a commit
+          if git rev-parse "$target_commit" >/dev/null 2>&1; then
+            echo "Using specified target commit: $target_commit"
+          else
+            echo "Target commit $target_commit does not exist. Using the latest commit on branch: $branch"
+            target_commit="origin/$branch"
           fi
+
           git checkout -b "$branch_name" "$target_commit"
           git push origin "$branch_name"
         env:
