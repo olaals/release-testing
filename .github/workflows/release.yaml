@@ -21,13 +21,13 @@ jobs:
         run: sudo apt-get install -y gh
 
       - name: Authenticate GitHub CLI
-        run: gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       - name: Create Pull Request
         run: |
           gh pr create \
-            -B staging \ # Target branch
-            -H development \ # Source branch
+            --base staging \
+            --head development \
             --title 'Merge development into staging' \
             --body 'This pull request was created by a GitHub Action.'
         env:
