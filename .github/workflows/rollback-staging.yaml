@@ -18,6 +18,10 @@ jobs:
         with:
           fetch-depth: 0 # Ensure full history is fetched
 
+      - name: Fetch all branches
+        run: |
+          git fetch --all
+
       - name: Validate version format
         id: validate_version
         run: |
@@ -30,8 +34,8 @@ jobs:
         id: find_commit
         run: |
           RELEASE_BRANCH="release-v${{ github.event.inputs.version }}"
-          if git show-ref --quiet refs/heads/$RELEASE_BRANCH; then
-            LATEST_COMMIT=$(git rev-parse $RELEASE_BRANCH)
+          if git show-ref --quiet refs/remotes/origin/$RELEASE_BRANCH; then
+            LATEST_COMMIT=$(git rev-parse origin/$RELEASE_BRANCH)
             echo "Latest commit on $RELEASE_BRANCH: $LATEST_COMMIT"
             echo "commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
           else
