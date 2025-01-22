@@ -1,0 +1,46 @@
+name: Rollback Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to rollback (e.g., 0.10.13)"
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Ensure full history is fetched
+
+      - name: Validate version format
+        id: validate_version
+        run: |
+          if ! [[ "${{ github.event.inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version format. Expected format: X.Y.Z (e.g., 0.10.13)"
+            exit 1
+          fi
+
+      - name: Find latest commit on release branch
+        id: find_commit
+        run: |
+          RELEASE_BRANCH="release-v${{ github.event.inputs.version }}"
+          if git show-ref --quiet refs/heads/$RELEASE_BRANCH; then
+            LATEST_COMMIT=$(git rev-parse $RELEASE_BRANCH)
+            echo "Latest commit on $RELEASE_BRANCH: $LATEST_COMMIT"
+            echo "commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
+          else
+            echo "Branch $RELEASE_BRANCH does not exist"
+            exit 1
+          fi
+
+      - name: Reset staging branch to latest commit
+        run: |
+          git checkout staging
+          git reset --hard ${{ steps.find_commit.outputs.commit }}
+          git push origin staging --force
