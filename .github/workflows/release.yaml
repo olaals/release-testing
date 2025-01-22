@@ -1,35 +1,34 @@
 name: Create Pull Request from Development to Staging
 
 on:
-  workflow_dispatch: # Allows the workflow to be triggered manually
+  workflow_dispatch: # Allows manual trigger
 
 permissions:
   contents: write        # Allows pushing commits, creating branches, etc.
   pull-requests: write   # Allows creating and modifying pull requests
 
 jobs:
-  create-release-pr:
+  create-pr:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history to ensure accurate branch comparison
+          fetch-depth: 0  # Ensure full history is fetched
 
-      - name: Setup Git
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
+      - name: Install GitHub CLI
+        run: sudo apt-get install -y gh
+
+      - name: Authenticate GitHub CLI
+        run: gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: staging
-          base: development
-          commit-message: "Merge development into staging"
-          title: "Development to Staging"
-          body: |
-            This pull request merges changes from `development` into `staging`.
+        run: |
+          gh pr create \
+            -B staging \ # Target branch
+            -H development \ # Source branch
+            --title 'Merge development into staging' \
+            --body 'This pull request was created by a GitHub Action.'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
