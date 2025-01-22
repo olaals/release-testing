@@ -1,4 +1,4 @@
-name: Create Release Branch and PR
+name: Create Release PR to Staging
 
 on:
   release:
@@ -10,30 +10,20 @@ permissions:
   pull-requests: write
 
 jobs:
-  create-release-branch:
+  create-release-pr:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history to ensure accurate branch comparison
 
-      - name: Setup Git
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-
-      - name: Create release branch
-        run: |
-          git fetch origin development
-          git checkout -b release-${{ github.event.release.tag_name }} origin/development
-          git push origin release-${{ github.event.release.tag_name }}
-
-      - name: Create pull request
+      - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Release ${{ github.event.release.tag_name }}"
-          branch: release-${{ github.event.release.tag_name }}
-          base: staging
+          head: development    # Source branch
+          base: staging        # Target branch
           title: "Release ${{ github.event.release.tag_name }}"
-          body: "This PR merges release branch `release-${{ github.event.release.tag_name }}` into `staging`."
+          body: "This PR merges `development` into `staging` for release `${{ github.event.release.tag_name }}`."
