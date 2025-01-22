@@ -28,7 +28,8 @@ jobs:
       - name: Create Release Branch
         run: |
           branch_name="release-${{ github.event.release.tag_name }}"
-          git checkout -b "$branch_name" origin/development
+          git fetch origin
+          git checkout -b "$branch_name" "${{ github.event.release.target_commitish }}"
           git push origin "$branch_name"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
