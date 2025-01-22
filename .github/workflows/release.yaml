@@ -27,7 +27,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: development    # Source branch
-          base: staging          # Target branch
+          branch: staging 
+          base: development 
           title: "Release ${{ github.event.release.tag_name }}"
           body: "This PR merges `development` into `staging` for release `${{ github.event.release.tag_name }}`."
