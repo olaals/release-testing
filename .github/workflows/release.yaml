@@ -27,8 +27,8 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: development
-          base: staging
+          branch: staging
+          base: development
           commit-message: "Merge development into staging"
           title: "Development to Staging"
           body: |
