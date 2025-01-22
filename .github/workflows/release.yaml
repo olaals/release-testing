@@ -1,13 +1,12 @@
-name: Create Release PR to Staging
+name: Create Release PR from Development to Staging
 
 on:
   release:
-    types:
-      - published
+    types: [published]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: write        # Allows pushing commits, creating branches, etc.
+  pull-requests: write  # Allows creating and modifying pull requests
 
 jobs:
   create-release-pr:
@@ -19,11 +18,16 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history to ensure accurate branch comparison
 
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          head: development    # Source branch
-          base: staging        # Target branch
+          branch: development    # Source branch
+          base: staging          # Target branch
           title: "Release ${{ github.event.release.tag_name }}"
           body: "This PR merges `development` into `staging` for release `${{ github.event.release.tag_name }}`."
