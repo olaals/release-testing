@@ -5,32 +5,35 @@ on:
     types:
       - published
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   create-release-branch:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Setup Git
-      run: |
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
 
-    - name: Create release branch
-      run: |
-        git fetch origin development
-        git checkout -b release-${{ github.event.release.tag_name }} origin/development
-        git push origin release-${{ github.event.release.tag_name }}
+      - name: Create release branch
+        run: |
+          git fetch origin development
+          git checkout -b release-${{ github.event.release.tag_name }} origin/development
+          git push origin release-${{ github.event.release.tag_name }}
 
-    - name: Create pull request
-      uses: peter-evans/create-pull-request@v5
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Release ${{ github.event.release.tag_name }}"
-        branch: release-${{ github.event.release.tag_name }}
-        base: staging
-        title: "Release ${{ github.event.release.tag_name }}"
-        body: "This PR merges release branch `release-${{ github.event.release.tag_name }}` into `staging`."
-
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Release ${{ github.event.release.tag_name }}"
+          branch: release-${{ github.event.release.tag_name }}
+          base: staging
+          title: "Release ${{ github.event.release.tag_name }}"
+          body: "This PR merges release branch `release-${{ github.event.release.tag_name }}` into `staging`."
