@@ -6,8 +6,8 @@ on:
       - published
 
 permissions:
-  contents: write        # Allows pushing commits, creating branches, etc.
-  pull-requests: write   # Allows creating and modifying pull requests
+  contents: write
+  pull-requests: write
 
 jobs:
   create-pr:
@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Ensure full history is fetched
+          fetch-depth: 0
 
       - name: Install GitHub CLI
         run: sudo apt-get install -y gh
@@ -25,35 +25,29 @@ jobs:
       - name: Authenticate GitHub CLI
         run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
-      - name: Fetch All Branches and Tags
-        run: git fetch --all
-
       - name: Create Release Branch
         run: |
           branch_name="release-${{ github.event.release.tag_name }}"
           target_commit="${{ github.event.release.target_commitish }}"
-          branch="${{ github.event.release.target_commitish }}"
-          
-          # Check if target_commitish exists as a commit
+
+          # Ensure target commit exists; fallback to the branch if it doesn't
           if git rev-parse "$target_commit" >/dev/null 2>&1; then
-            echo "Using specified target commit: $target_commit"
+            echo "Using target commit: $target_commit"
           else
-            echo "Target commit $target_commit does not exist. Using the latest commit on branch: $branch"
-            target_commit="origin/$branch"
+            echo "Target commit $target_commit not found. Using the latest commit on branch: $target_commit"
+            target_commit="origin/$target_commit"
           fi
 
           git checkout -b "$branch_name" "$target_commit"
           git push origin "$branch_name"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Pull Request
+      - name: Create Pull Request on Behalf of User
         run: |
           branch_name="release-${{ github.event.release.tag_name }}"
+          release_creator="${{ github.actor }}" # User who created the release
+
           gh pr create \
             --base staging \
             --head "$branch_name" \
             --title "Release ${{ github.event.release.tag_name }}: Merge $branch_name into staging" \
-            --body "This pull request merges the release branch `$branch_name` into `staging` for release `${{ github.event.release.tag_name }}`."
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            --body "This pull request merges the release branch `$branch_name` into `staging` for release `${{ github.event.release.tag_name }}`.\n\nCreated by: @${release_creator}."
