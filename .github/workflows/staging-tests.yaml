@@ -1,6 +1,5 @@
 name: Staging Tests
 
-# Trigger the workflow on pull requests to the main branch
 on:
   pull_request:
     branches: [ staging ]
